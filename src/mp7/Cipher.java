@@ -152,20 +152,42 @@ public class Cipher {
 
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
-		System.out.println("What is your password?");
+		System.out.println("What is your password to encrypt?");
 		String password = scanner.nextLine();
 		System.out.println("What is your message?");
 		String message = scanner.nextLine();
 		System.out.println("Original Message:");
-		System.out.println("\t > " + message);
-		System.out.println("Encrypted Message:");
+		System.err.print(message);
+		System.out.println("\n");
+		System.out.println("Encrypting:");
 		Cipher enc = new Cipher(password);
-		String encryptedText = enc.encrypt(message);
-		System.out.println("\t > " + encryptedText);
-		System.out.println("Decrypted Message:");
-		Cipher dec = new Cipher(password);
-		String decryptedText = dec.decrypt(encryptedText);
-		System.out.println("\t > " + decryptedText);
+		String encryptedText = "";
+		try {
+			encryptedText = enc.encrypt(message);
+			System.err.print(encryptedText);
+			System.out.println("\n");
+		} catch(Exception e) {
+			System.out.println("There was an error encrypting");
+		}
+		boolean done = false;
+		while(!done) {
+			System.out.println("What is your password to decrypt?");
+			password = scanner.nextLine();
+			System.out.println("Decrypting:");
+			Cipher dec = new Cipher(password);
+			String decryptedText = "";
+			try {
+				decryptedText = dec.decrypt(encryptedText);
+				System.err.print(decryptedText);
+				System.out.println("");
+				System.out.println("\n");
+				done = true;
+			} catch(Exception e) {
+				System.out.println("ERROR! There was an error decrypting");
+				System.out.println();
+				System.out.println("Try a different password:");
+			}
+		}
 		scanner.close();
 	}
 
