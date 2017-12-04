@@ -49,6 +49,18 @@ public class Cipher {
 		return result;
 	}
 	
+	public String simpleReplace(final String message, final String[] keys, final String[] values) {
+		String output = message;
+		for(int i = 0; i < message.length(); i++) {
+			for(int j = 0; j < keys.length; j++) {
+				if(output.charAt(i) == (keys[j].charAt(0))) {
+					output = output.substring(0, i) + values[j] + output.substring(i + 1);
+					j = keys.length;
+				}
+			}
+		}
+		return output;
+	}
 	
 
 	/**
