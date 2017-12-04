@@ -1,5 +1,6 @@
 package mp7;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Cipher {
@@ -140,6 +141,90 @@ public class Cipher {
 			}
 		}
 		return filler;
+	}
+	
+	/**
+	 * Apply the character neutralizer
+	 * @param message
+	 * @param filler
+	 * @param splice
+	 * @return
+	 */
+	public String applyFiller(final String message, final int[] filler, final String splice) {
+		String output = message;
+		int[] rem = new int[filler.length];
+		int required = 0;
+		for(int i = 0; i < filler.length; i++) {
+			rem[i] = filler[i];
+			if(filler[i] > 0) {
+				required += filler[i];
+			}
+		}
+		int index = 0;
+		ArrayList<Integer> perPasses = new ArrayList<Integer>();
+		int passes = 0;
+		int off = (output.length() + required) / required;
+		boolean forward = false;
+		for(int i = 0; i < required; i++) {
+			forward = !forward;
+			int nzIndex = 0;
+			if(forward) {
+				nzIndex = this.getNonZeroIndex(rem);
+			} else {
+				nzIndex = this.getLastNonZeroIndex(rem);
+			}
+			output = output.substring(0, index) + keys[nzIndex] + output.substring(index);
+			index += off + 1;
+			passes++;
+			if(index >= output.length()) {
+				index = 0;
+				perPasses.add(passes);
+				passes = 0;
+			}
+			rem[nzIndex] -= 1;
+		}
+		if(passes > 0) {
+			perPasses.add(passes);
+		}
+		System.out.println("\t > Required " + required + " passes");
+		return output + this.createPasses(perPasses) + this.simpleReplace("Z" + this.convertNtoL(off), this.keys, this.values);
+	}
+	
+	public String createPasses(ArrayList<Integer> perPasses) {
+		String pass = "PP";
+		for(int i = 0; i < perPasses.size(); i++) {
+			pass += this.convertNtoL(perPasses.get(i));
+			if(i < perPasses.size() - 1) {
+				pass += "P";
+			}
+		}
+		return this.simpleReplace(pass, this.keys, this.values);
+	}
+	
+	/**
+	 * Remove all the filler.
+	 * 
+	 * @param message
+	 * @param required
+	 * @param offset
+	 * @return
+	 */
+	public String removeFiller(final String message, final int required, final int offset, final int[] passes) {
+		String output = message;
+		int index = 0;
+		int currentCycle = 0;
+		int cycleNumber = 0;
+		for(int i = 0; i < required; i++) {
+			if(cycleNumber < passes.length && currentCycle >= passes[passes.length - cycleNumber - 1]) {
+				currentCycle = 0;
+				cycleNumber++;
+				index = 0;
+			}
+			output = output.substring(0, index) + output.substring(index + 1);
+			currentCycle++;
+			index += offset;
+		}
+		return output;
 	}
 	
 	public int getNonZeroIndex(int[] array) {
