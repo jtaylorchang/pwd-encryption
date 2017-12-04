@@ -3,21 +3,21 @@ package mp7;
 import java.util.Scanner;
 
 public class Cipher {
-	
+
 	private String sequence = "";
-	private String[] keys = {
-			" ", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
-	};
+	private String[] keys = { " ", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q",
+			"R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
 	private String[] values = new String[keys.length];
-	
+
 	/**
 	 * Generate a unique sequence using the password
+	 * 
 	 * @param password
 	 */
 	public Cipher(final String password) {
-		
+
 	}
-	
+
 	/**
 	 * Generate a sequence unique to the password
 	 * 
@@ -26,16 +26,24 @@ public class Cipher {
 	public String generateSequence(final String password) {
 		return "TODO";
 	}
-	
+
 	/**
 	 * Generate the key value pairs
 	 * 
 	 * @param sequence
 	 */
 	public void generateKV(final String sequence) {
-		
+
 	}
-	
+
+	public static String byteArrayToHexString(byte[] b) {
+		String result = "";
+		for (int i = 0; i < b.length; i++) {
+			result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
+		}
+		return result;
+	}
+
 	/**
 	 * Encrypt
 	 * 
@@ -45,7 +53,7 @@ public class Cipher {
 	public String encrypt(final String message) {
 		return "TODO";
 	}
-	
+
 	/**
 	 * Undo encrypt
 	 * 
@@ -55,7 +63,7 @@ public class Cipher {
 	public String decrypt(final String message) {
 		return "TODO";
 	}
-	
+
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
 		System.out.println("What is your password?");
