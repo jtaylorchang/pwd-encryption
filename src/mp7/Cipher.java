@@ -114,23 +114,53 @@ public class Cipher {
 		}
 		return Integer.parseInt(conv);
 	}
+	
+	public String determineSplicerValue(final String message) {
+		return "S" + this.convertNtoL(this.getRequiredFillerMax(message));
+	}
 
 	public String addSplicer(final String message, final String splicer) {
 		return message + splicer;
+	}
+	
+	public int getSplicer(String message) {
+		String s = message.substring(message.lastIndexOf("S") + 1, message.length());
+		return this.convertLtoN(s);
 	}
 
 	public String stripSplicer(final String message) {
 		return message.substring(0, message.lastIndexOf("S"));
 	}
 	
+	public int getOff(String message) {
+		String s = message.substring(message.lastIndexOf("Z") + 1, message.length());
+		return this.convertLtoN(s);
+	}
+	
 	public String stripOff(final String message) {
 		return message.substring(0, message.lastIndexOf("Z"));
+	}
+	
+	public int[] getPasses(String message) {
+		String s = message.substring(message.lastIndexOf("PP") + 2, message.length());
+		String[] splits = s.split("P");
+		int[] passes = new int[splits.length];
+		for(int i = splits.length - 1; i >= 0; i--) {
+			passes[i] = this.convertLtoN(splits[i]);
+		}
+		return passes;
 	}
 
 	public String stripPasses(final String message) {
 		return message.substring(0, message.lastIndexOf("PP"));
 	}
 	
+	/**
+	 * Get the number of characters required to neutralize
+	 * @param dist
+	 * @param max
+	 * @return
+	 */
 	public int[] getFillerDistribution(final int[] dist, final int max) {
 		int[] filler = new int[dist.length];
 		for(int i = 0; i < dist.length; i++) {
@@ -141,6 +171,20 @@ public class Cipher {
 			}
 		}
 		return filler;
+	}
+	
+	public int getRequiredFillerMax(final String message) {
+		int[][] distCombo = this.getCharacterDistribution(message);
+		int[] dist = distCombo[0];
+		int max = distCombo[1][0];
+		int[] filler = this.getFillerDistribution(dist, max);
+		int required = 0;
+		for(int i = 0; i < filler.length; i++) {
+			if(filler[i] > 0) {
+				required += filler[i];
+			}
+		}
+		return required;
 	}
 	
 	/**
