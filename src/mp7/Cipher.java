@@ -63,6 +63,10 @@ public class Cipher {
 		}
 		return output;
 	}
+	
+	public String blur(final String message) {
+		return "TODO";
+	}
 
 	public String addSplicer(final String message, final String splicer) {
 		return message + splicer;
