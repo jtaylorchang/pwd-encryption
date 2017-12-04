@@ -138,7 +138,12 @@ public class Cipher {
 	 * @return
 	 */
 	public String decrypt(final String message) {
-		return "TODO";
+		String input = message.toUpperCase();
+		String output = this.simpleReplace(input, this.values, this.keys);
+		System.out.println("\t > Finished applying simple replace [" + output + "]");
+		String sharpened = this.sharpen(output);
+		output = sharpened;
+		return output;
 	}
 
 	public static void main(String[] args) {
