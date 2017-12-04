@@ -15,7 +15,9 @@ public class Cipher {
 	 * @param password
 	 */
 	public Cipher(final String password) {
-
+		this.sequence = this.generateSequence(password);
+		System.out.println("\t > Sequence: " + sequence);
+		this.generateKV(this.sequence);
 	}
 
 	/**
