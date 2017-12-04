@@ -34,7 +34,7 @@ public class Cipher {
 	 */
 	public void generateKV(final String sequence) {
 		this.values = new String[this.keys.length];
-		for(int i = 0; i < sequence.length() / 2; i++) {
+		for (int i = 0; i < sequence.length() / 2; i++) {
 			String sV = sequence.substring(i * 2, i * 2 + 2);
 			int v = Integer.parseInt(sV);
 			this.values[i] = this.keys[v];
@@ -48,12 +48,12 @@ public class Cipher {
 		}
 		return result;
 	}
-	
+
 	public String simpleReplace(final String message, final String[] keys, final String[] values) {
 		String output = message;
-		for(int i = 0; i < message.length(); i++) {
-			for(int j = 0; j < keys.length; j++) {
-				if(output.charAt(i) == (keys[j].charAt(0))) {
+		for (int i = 0; i < message.length(); i++) {
+			for (int j = 0; j < keys.length; j++) {
+				if (output.charAt(i) == (keys[j].charAt(0))) {
 					output = output.substring(0, i) + values[j] + output.substring(i + 1);
 					j = keys.length;
 				}
@@ -64,6 +64,10 @@ public class Cipher {
 
 	public String addSplicer(final String message, final String splicer) {
 		return message + splicer;
+	}
+
+	public String stripSplicer(final String message) {
+		return message.substring(0, message.lastIndexOf("S"));
 	}
 
 	/**
