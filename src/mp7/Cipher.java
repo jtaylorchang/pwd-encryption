@@ -69,6 +69,10 @@ public class Cipher {
 	public String stripSplicer(final String message) {
 		return message.substring(0, message.lastIndexOf("S"));
 	}
+	
+	public String stripOff(final String message) {
+		return message.substring(0, message.lastIndexOf("Z"));
+	}
 
 	/**
 	 * Encrypt
