@@ -74,6 +74,10 @@ public class Cipher {
 		return message.substring(0, message.lastIndexOf("Z"));
 	}
 
+	public String stripPasses(final String message) {
+		return message.substring(0, message.lastIndexOf("PP"));
+	}
+	
 	/**
 	 * Encrypt
 	 * 
