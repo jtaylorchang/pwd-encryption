@@ -33,7 +33,12 @@ public class Cipher {
 	 * @param sequence
 	 */
 	public void generateKV(final String sequence) {
-
+		this.values = new String[this.keys.length];
+		for(int i = 0; i < sequence.length() / 2; i++) {
+			String sV = sequence.substring(i * 2, i * 2 + 2);
+			int v = Integer.parseInt(sV);
+			this.values[i] = this.keys[v];
+		}
 	}
 
 	public static String byteArrayToHexString(byte[] b) {
@@ -43,6 +48,8 @@ public class Cipher {
 		}
 		return result;
 	}
+	
+	
 
 	/**
 	 * Encrypt
