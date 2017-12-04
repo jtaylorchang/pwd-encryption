@@ -71,6 +71,32 @@ public class Cipher {
 	public String sharpen(final String message) {
 		return "TODO";
 	}
+	
+	/**
+	 * Get the character occurrences for each key value.
+	 * 
+	 * @param message
+	 * @return
+	 */
+	public int[][] getCharacterDistribution(final String message) {
+		int[] dist = new int[this.keys.length];
+		int max = 0;
+		System.out.print("\t > Neutrality pattern: ");
+		for(int i = 0; i < this.keys.length; i++) {
+			int occ = message.length() - message.replace(keys[i], "").length();
+			if(occ == 0) {
+				occ = -1;
+			}
+			if(occ > max) {
+				max = occ;
+			}
+			dist[i] = occ;
+			if(occ > 0) System.out.print(occ);
+			//System.out.println("\t > Occurrences of " + this.keys[i] + " = " + dist[i]);
+		}
+		System.out.println();
+		return new int[][] { dist, new int[] { max }};
+	}
 
 	public String addSplicer(final String message, final String splicer) {
 		return message + splicer;
