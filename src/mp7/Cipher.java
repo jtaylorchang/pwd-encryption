@@ -99,6 +99,15 @@ public class Cipher {
 		return -1;
 	}
 	
+	public int getLastNonZeroIndex(int[] array) {
+		for (int i = array.length - 1; i >= 0; i--) {
+			if(array[i] > 0) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	/**
 	 * Encrypt
 	 * 
