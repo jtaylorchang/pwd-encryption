@@ -78,6 +78,18 @@ public class Cipher {
 		return message.substring(0, message.lastIndexOf("PP"));
 	}
 	
+	public int[] getFillerDistribution(final int[] dist, final int max) {
+		int[] filler = new int[dist.length];
+		for(int i = 0; i < dist.length; i++) {
+			if(dist[i] == -1) {
+				filler[i] = -1;
+			} else {
+				filler[i] = max - dist[i];
+			}
+		}
+		return filler;
+	}
+	
 	/**
 	 * Encrypt
 	 * 
