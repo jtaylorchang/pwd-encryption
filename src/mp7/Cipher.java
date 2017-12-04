@@ -90,6 +90,15 @@ public class Cipher {
 		return filler;
 	}
 	
+	public int getNonZeroIndex(int[] array) {
+		for (int i = 0; i < array.length; i++) {
+			if(array[i] > 0) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	/**
 	 * Encrypt
 	 * 
