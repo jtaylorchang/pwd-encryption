@@ -114,6 +114,8 @@ public class Cipher {
 		return -1;
 	}
 	
+	
+	
 	/**
 	 * Encrypt
 	 * 
@@ -121,7 +123,12 @@ public class Cipher {
 	 * @return
 	 */
 	public String encrypt(final String message) {
-		return "TODO";
+		String input = message.toUpperCase();
+		String output = this.simpleReplace(input, this.keys, this.values);
+		System.out.println("\t > Finished applying simple replace [" + output + "]");
+		String blurred = this.blur(output);
+		output = blurred;
+		return output;
 	}
 
 	/**
