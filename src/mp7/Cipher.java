@@ -97,6 +97,22 @@ public class Cipher {
 		System.out.println();
 		return new int[][] { dist, new int[] { max }};
 	}
+	
+	public String convertNtoL(final int num) {
+		String conv = String.valueOf(num);
+		for(int i = 0; i < this.keys.length; i++) {
+			conv = conv.replaceAll(String.valueOf(i), this.keys[i]);
+		}
+		return conv;
+	}
+	
+	public int convertLtoN(final String s) {
+		String conv = s;
+		for(int i = 0; i < this.keys.length; i++) {
+			conv = conv.replaceAll(this.keys[i], String.valueOf(i));
+		}
+		return Integer.parseInt(conv);
+	}
 
 	public String addSplicer(final String message, final String splicer) {
 		return message + splicer;
