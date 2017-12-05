@@ -36,7 +36,7 @@ import java.util.Scanner;
  * |	 7	|	10	|	2.2 * 10^24	|
  * |	 8	|	10	|	5.8 * 10^25	|
  * |	 9	|	10	|	1.6 * 10^27	|
- * |	 10	|	10	|	4.2 * 10^28 	| --> 9.8*10^10 * the age of the universe
+ * |	 10	|	10	|	4.2 * 10^28 	| --> 100 billion * the age of the universe
  * |____	|_______	|_______________	|
  * 
  * and that is only with 10 characters for a password, let alone something like 20...
@@ -48,7 +48,7 @@ import java.util.Scanner;
  * Step 2:	Generate key-value pairs using a proprietary algorithm which
  * 			creates the connections based on the sequence number.
  * 
- * Step 3:	Apply a 1:1 swap of the keys and values.
+ * Step 3:	Apply a 1:1 swap of the keys and values which is a substitution cipher.
  * 
  * Step 4:	Analyze the distribution of characters in the encrypted message.
  * 
