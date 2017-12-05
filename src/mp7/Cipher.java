@@ -170,12 +170,59 @@ public class Cipher {
 		return output;
 	}
 	
+	/**
+	 * Insert characters to neutralize the message character distribution.
+	 * 
+	 * @param message
+	 * @return
+	 */
 	public String blur(final String message) {
-		return "TODO";
+		System.out.println("\t > Applying character blur");
+		String output = message;
+		String splicer = this.simpleReplace(this.determineSplicerValue(output), this.keys, this.values);
+		System.out.println("\t > Finished calculating splicer " + splicer);
+		int[][] distCombo = this.getCharacterDistribution(output);
+		int[] dist = distCombo[0];
+		int max = distCombo[1][0];
+		System.out.println("\t > Finished analysing character occurrences");
+		int[] filler = this.getFillerDistribution(dist, max);
+		System.out.println("\t > Finished determining necessary filler");
+		output = this.applyFiller(output, filler, splicer);
+		output = addSplicer(output, splicer);
+		System.out.println("\t > Finished applying splicer");
+		//may need to filter once more?
+		System.out.println("\t > Finished neutralizing character distribution");
+		return output;
 	}
 	
+	/**
+	 * Remove the filler characters.
+	 * 
+	 * @param message
+	 * @return
+	 */
 	public String sharpen(final String message) {
-		return "TODO";
+		System.out.println("\t > Applying character sharpen");
+		String output = message;
+		int required = this.getSplicer(output);
+		System.out.println("\t > Detecting character splicer");
+		output = this.stripSplicer(output);
+		System.out.println("\t > Extracting character splicer = " + required);
+		int off = this.getOff(output);
+		System.out.println("\t > Detecting offset value = " + off);
+		output = this.stripOff(output);
+		System.out.println("\t > Extracting offset value");
+		int[] passes = this.getPasses(output);
+		String pass = "";
+		for(int i = 0; i < passes.length; i++) {
+			pass += passes[i];
+		}
+		System.out.println("\t > Detecting pass counter");
+		output = this.stripPasses(output);
+		System.out.println("\t > Extracting pass counter = " + pass);
+		output = this.removeFiller(output, required, off, passes);
+		System.out.println("\t> Removed neutralizing characters");
+		return output;
 	}
 	
 	/**
@@ -433,17 +480,17 @@ public class Cipher {
 		System.out.println("What is your message?");
 		String message = scanner.nextLine();
 		System.out.println("Original Message:");
-		System.err.print(message);
+		System.out.print(message);
 		System.out.println("\n");
 		System.out.println("Encrypting:");
 		Cipher enc = new Cipher(password);
 		String encryptedText = "";
 		try {
 			encryptedText = enc.encrypt(message);
-			System.err.print(encryptedText);
+			System.out.print(encryptedText);
 			System.out.println("\n");
 		} catch(Exception e) {
-			System.out.println("There was an error encrypting");
+			System.err.println("There was an error encrypting");
 		}
 		boolean done = false;
 		while(!done) {
@@ -454,14 +501,14 @@ public class Cipher {
 			String decryptedText = "";
 			try {
 				decryptedText = dec.decrypt(encryptedText);
-				System.err.print(decryptedText);
+				System.out.print(decryptedText);
 				System.out.println("");
 				System.out.println("\n");
 				done = true;
 			} catch(Exception e) {
-				System.out.println("ERROR! There was an error decrypting");
+				System.err.println("ERROR! There was an error decrypting");
 				System.out.println();
-				System.out.println("Try a different password:");
+				System.err.println("Try a different password:");
 			}
 		}
 		scanner.close();
