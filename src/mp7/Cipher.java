@@ -7,17 +7,94 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Scanner;
 
+/**
+ * 
+ * @author Jeff Taylor-Chang and Chinmaya Sharma.
+ * 
+ * ==================== GOAL ====================
+ * The goal was to create an encryption which was unique to the password
+ * and thus could only be broken by someone who knew the password, rather than
+ * knew the encryption method.
+ * 
+ * ==================== TIME ====================
+ * Since every encrypted message can be different based on the message or the password,
+ * the brute force method of testing various inputs is nearly impossible since the attacker
+ * would have to not only test every possible message but also test every possible password.
+ * The number of possibilities that would have to be tested would scale at a rate of
+ * c27^(m+p) with m being the number of letters in the message and p being the number of letters
+ * in the password and c being the time it takes to encrypt one message.
+ * So with a ten letter password and assuming c = 1 second
+ * |____	|_______	|_______________	|
+ * |	 m	|	p	|	time		   	|
+ * |____	|_______	|_______________	|
+ * | 1	|	10	|	5.6 * 10^15	|
+ * |	 2	|	10	|	1.5 * 10^17	|
+ * |	 3	|	10	|	4.1 * 10^18	|
+ * |	 4	|	10	|	1.1 * 10^20	|
+ * |	 5	|	10	|	3.0 * 10^21	|
+ * |	 6	|	10	|	8.0 * 10^22	|
+ * |	 7	|	10	|	2.2 * 10^24	|
+ * |	 8	|	10	|	5.8 * 10^25	|
+ * |	 9	|	10	|	1.6 * 10^27	|
+ * |	 10	|	10	|	4.2 * 10^28 	| --> 9.8*10^10 * the age of the universe
+ * |____	|_______	|_______________	|
+ * 
+ * and that is only with 10 characters for a password, let alone something like 20...
+ * 
+ * ==================== METHOD ====================
+ * Step 1:	Generate a sequence number that is unique to the password.
+ * 			ie: "password" --> 071724150123020426111409211200181310200603051625082219
+ * 
+ * Step 2:	Generate key-value pairs using a proprietary algorithm which
+ * 			creates the connections based on the sequence number.
+ * 
+ * Step 3:	Apply a 1:1 swap of the keys and values.
+ * 
+ * Step 4:	Analyze the distribution of characters in the encrypted message.
+ * 
+ * Step 5:	Automatically determine the appropriate way to neutralize the message
+ * 			ie: add filler characters that disrupt the message and prevent
+ * 			character analysis aka "the scrabble method" (coined by yours truly)
+ * 			aka Statistical Frequency Analysis which is commonly used to break
+ * 			substitution ciphers like the one we applied in step 3
+ * 
+ * Step 6:	Calculate the unique neutralizing numbers and insert into the message
+ * 			using a similarly encrypted tag.
+ * 
+ * Step 7:	(Optional) Apply the encryption on itself to further randomize as many
+ * 			times as you'd like since the encryption can self-apply recursively.
+ * 			In order to keep the scaling low, this only applies it once but overriding
+ * 			the public encrypt and decrypt methods allows as many times as necessary.
+ * 
+ * Decryption is accomplished by undoing each step in the reverse order.
+ * 
+ * ==================== CREDIT ==================== 
+ * ~ Written and devised by Jeff Taylor-Chang (https://jefftc.com)
+ * ~ implemented by Jeff Taylor-Chang and Chinmaya Sharma
+ * 
+ * © Copyright 2017
+ * 
+ * Created on December 14th, 2017
+ * 
+ */
 public class Cipher {
 
+	/** Use a sequence unique to each password to generate the key value pairs. **/
 	private String sequence = "";
-	private String[] keys = { " ", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q",
-			"R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+	/** The array of all the keys. **/
+	private String[] keys = {
+		" ",
+		//"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+		"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+		//"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+	};
+	/** The array of all the values. Must be populated. **/
 	private String[] values = new String[keys.length];
 
 	/**
-	 * Generate a unique sequence using the password
+	 * Generate a unique sequence using the password and then generate the key value pairs.
 	 * 
-	 * @param password
+	 * @param password the user's password.
 	 */
 	public Cipher(final String password) {
 		this.sequence = this.generateSequence(password);
@@ -26,11 +103,17 @@ public class Cipher {
 	}
 
 	/**
-	 * Generate a sequence unique to the password
+	 * Generate a sequence unique to the password.
+	 * First encrypt the password using SHA-256 and then convert to a string.
+	 * Take that number and break into small chunks that can be used as array locations.
+	 * Convert them to the bounds necessary for the number of keys.
+	 * Put them in order and then compare to find out the random locations of each one which
+	 * is unique to the password, thus giving unique connections between keys and values.
 	 * 
-	 * @param password
+	 * @param password to generate with.
+	 * @return the sequence generated.
 	 */
-	public String generateSequence(final String password) {
+	private String generateSequence(final String password) {
 		MessageDigest messageDigest;
 		String sequence = "";
 		try {
@@ -59,19 +142,26 @@ public class Cipher {
 		return finalSequence.toString();
 	}
 	
-	public ArrayList<Integer> convertTo26(ArrayList<Integer> pieces) {
+	/**
+	 * Take many arrays of numbers of various sizes and compile them
+	 * to create one array with a set of unique numbers.
+	 * 
+	 * @param pieces the arrays of chunks.
+	 * @return the array in the correct size.
+	 */
+	private ArrayList<Integer> convertTo26(ArrayList<Integer> pieces) {
 		ArrayList<Integer> sorted = new ArrayList<Integer>();
 		for(int i = 0; i < pieces.size(); i++) {
 			sorted.add(pieces.get(i));
 		}
 		ArrayList<Integer> sorted26 = new ArrayList<Integer>();
-		for(int i = 0; i < sorted.size() && i < 27; i++) {
+		for(int i = 0; i < sorted.size() && i < this.keys.length; i++) {
 			sorted26.add(sorted.get(i));
 		}
 		Collections.sort(sorted26);
 		ArrayList<Integer> p26 = new ArrayList<Integer>();
 		for(int j = 0; j < sorted26.size(); j++) {
-			for(int i = 0; i < pieces.size() && i < 27; i++) {
+			for(int i = 0; i < pieces.size() && i < this.keys.length; i++) {
 				if(pieces.get(i) == sorted26.get(j)) {
 					p26.add(i);
 				}
@@ -80,7 +170,14 @@ public class Cipher {
 		return p26;
 	}
 	
-	public int[] breakBySize(String sequence, int size) {
+	/**
+	 * Break a sequence into small chunks.
+	 * 
+	 * @param sequence the sequence to select from.
+	 * @param size the size of the chunks.
+	 * @return an array of chunks.
+	 */
+	private int[] breakBySize(String sequence, int size) {
 		ArrayList<Integer> pieces = new ArrayList<Integer>();
 		for (int i = 0; i < sequence.length() / size; i++) {
 			String sPiece = "";
@@ -105,7 +202,13 @@ public class Cipher {
 		return array;
 	}
 	
-	public int[] breakDown(int[] original) {
+	/**
+	 * Shrink numbers down to an appropriate scope.
+	 * 
+	 * @param original the numbers in their original sizes.
+	 * @return the array of smaller numbers.
+	 */
+	private int[] breakDown(int[] original) {
 		int[] small = new int[original.length];
 		for (int i = 0; i < original.length; i++) {
 			int s = (original[i] / 7);
@@ -117,7 +220,13 @@ public class Cipher {
 		return small;
 	}
 	
-	public ArrayList<Integer> combine(int[] ... arrays) {
+	/**
+	 * Combines all the arrays into one single array.
+	 * 
+	 * @param arrays the arrays to combine.
+	 * @return the combined array.
+	 */
+	private ArrayList<Integer> combine(int[] ... arrays) {
 		int size = 0;
 		for (int i = 0; i < arrays.length; i++) {
 			size += arrays[i].length;
@@ -136,11 +245,11 @@ public class Cipher {
 	}
 
 	/**
-	 * Generate the key value pairs
+	 * Generate the key value pairs.
 	 * 
-	 * @param sequence
+	 * @param sequence the unique sequence.
 	 */
-	public void generateKV(final String sequence) {
+	private void generateKV(final String sequence) {
 		this.values = new String[this.keys.length];
 		for (int i = 0; i < sequence.length() / 2; i++) {
 			String sV = sequence.substring(i * 2, i * 2 + 2);
@@ -149,15 +258,31 @@ public class Cipher {
 		}
 	}
 
-	public static String byteArrayToHexString(byte[] b) {
+	/**
+	 * Convert bytes to readable string.
+	 * 
+	 * @param b the byte array.
+	 * @return the string version.
+	 */
+	private static String byteArrayToHexString(byte[] bytes) {
 		String result = "";
-		for (int i = 0; i < b.length; i++) {
-			result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
+		for (int i = 0; i < bytes.length; i++) {
+			result += Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1);
 		}
 		return result;
 	}
 
-	public String simpleReplace(final String message, final String[] keys, final String[] values) {
+	/**
+	 * Applies a simple 1-1 swap of the key value pairs.
+	 * If given the keys and values one way and then the other,
+	 * it will encrypt then undo the encryption.
+	 * 
+	 * @param message the message to swap.
+	 * @param keys the key array.
+	 * @param values the value array.
+	 * @return the swapped message.
+	 */
+	private String simpleReplace(final String message, final String[] keys, final String[] values) {
 		String output = message;
 		for (int i = 0; i < message.length(); i++) {
 			for (int j = 0; j < keys.length; j++) {
@@ -172,11 +297,13 @@ public class Cipher {
 	
 	/**
 	 * Insert characters to neutralize the message character distribution.
+	 * This allows the encrypted message to beat attempts to analyze
+	 * the number of each character.
 	 * 
-	 * @param message
-	 * @return
+	 * @param message the message to encrypt.
+	 * @return the blurred message with near neutral distribution.
 	 */
-	public String blur(final String message) {
+	private String blur(final String message) {
 		System.out.println("\t > Applying character blur");
 		String output = message;
 		String splicer = this.simpleReplace(this.determineSplicerValue(output), this.keys, this.values);
@@ -196,12 +323,13 @@ public class Cipher {
 	}
 	
 	/**
-	 * Remove the filler characters.
+	 * Remove the filler characters, thus restoring the message
+	 * to its original state before the 1-1 swap.
 	 * 
-	 * @param message
-	 * @return
+	 * @param message the blurred message.
+	 * @return the swapped message.
 	 */
-	public String sharpen(final String message) {
+	private String sharpen(final String message) {
 		System.out.println("\t > Applying character sharpen");
 		String output = message;
 		int required = this.getSplicer(output);
@@ -221,17 +349,17 @@ public class Cipher {
 		output = this.stripPasses(output);
 		System.out.println("\t > Extracting pass counter = " + pass);
 		output = this.removeFiller(output, required, off, passes);
-		System.out.println("\t> Removed neutralizing characters");
+		System.out.println("\t > Removed neutralizing characters");
 		return output;
 	}
 	
 	/**
 	 * Get the character occurrences for each key value.
 	 * 
-	 * @param message
-	 * @return
+	 * @param message the message to count.
+	 * @return an array of how many occurrences of each character.
 	 */
-	public int[][] getCharacterDistribution(final String message) {
+	private int[][] getCharacterDistribution(final String message) {
 		int[] dist = new int[this.keys.length];
 		int max = 0;
 		System.out.print("\t > Neutrality pattern: ");
@@ -251,7 +379,15 @@ public class Cipher {
 		return new int[][] { dist, new int[] { max }};
 	}
 	
-	public String convertNtoL(final int num) {
+	/**
+	 * Convert numbers to letters, ie 1 --> A, 2 --> B etc.
+	 * This allows numbers to be hidden inside the message for tagging
+	 * purposes.
+	 * 
+	 * @param num the number to convert.
+	 * @return the letter value.
+	 */
+	private String convertNtoL(final int num) {
 		String conv = String.valueOf(num);
 		for(int i = 0; i < this.keys.length; i++) {
 			conv = conv.replaceAll(String.valueOf(i), this.keys[i]);
@@ -259,7 +395,13 @@ public class Cipher {
 		return conv;
 	}
 	
-	public int convertLtoN(final String s) {
+	/**
+	 * Undoes the conversion.
+	 * 
+	 * @param s the string to convert.
+	 * @return the number value.
+	 */
+	private int convertLtoN(final String s) {
 		String conv = s;
 		for(int i = 0; i < this.keys.length; i++) {
 			conv = conv.replaceAll(this.keys[i], String.valueOf(i));
@@ -267,33 +409,76 @@ public class Cipher {
 		return Integer.parseInt(conv);
 	}
 	
-	public String determineSplicerValue(final String message) {
+	/**
+	 * Calculates what the splicer tag should be.
+	 * 
+	 * @param message the encrypted message.
+	 * @return the splicer value.
+	 */
+	private String determineSplicerValue(final String message) {
 		return "S" + this.convertNtoL(this.getRequiredFillerMax(message));
 	}
-
-	public String addSplicer(final String message, final String splicer) {
+	
+	/**
+	 * Adds a splicer tag to a message.
+	 * 
+	 * @param message the message without a splicer tag.
+	 * @param splicer the splicer value.
+	 * @return the message with a splicer tag.
+	 */
+	private String addSplicer(final String message, final String splicer) {
 		return message + splicer;
 	}
 	
-	public int getSplicer(String message) {
+	/**
+	 * Reads a splicer tag from a message.
+	 * 
+	 * @param message the encrypted message.
+	 * @return the splicer value.
+	 */
+	private int getSplicer(String message) {
 		String s = message.substring(message.lastIndexOf("S") + 1, message.length());
 		return this.convertLtoN(s);
 	}
 
-	public String stripSplicer(final String message) {
+	/**
+	 * Removes the splicer tag from a message.
+	 * 
+	 * @param message the message with a splicer tag.
+	 * @return the message without a splicer tag.
+	 */
+	private String stripSplicer(final String message) {
 		return message.substring(0, message.lastIndexOf("S"));
 	}
 	
-	public int getOff(String message) {
+	/**
+	 * Reads the offset tag from a message.
+	 * 
+	 * @param message the message with the offset tag.
+	 * @return the offset value.
+	 */
+	private int getOff(String message) {
 		String s = message.substring(message.lastIndexOf("Z") + 1, message.length());
 		return this.convertLtoN(s);
 	}
 	
-	public String stripOff(final String message) {
+	/**
+	 * Removes the offset tag from a message.
+	 * 
+	 * @param message the message with the offset tag.
+	 * @return the message without the offset tag.
+	 */
+	private String stripOff(final String message) {
 		return message.substring(0, message.lastIndexOf("Z"));
 	}
 	
-	public int[] getPasses(String message) {
+	/**
+	 * Reads all of the pass tags from a message.
+	 * 
+	 * @param message the message with the pass tags.
+	 * @return the array of pass values.
+	 */
+	private int[] getPasses(String message) {
 		String s = message.substring(message.lastIndexOf("PP") + 2, message.length());
 		String[] splits = s.split("P");
 		int[] passes = new int[splits.length];
@@ -303,17 +488,24 @@ public class Cipher {
 		return passes;
 	}
 
-	public String stripPasses(final String message) {
+	/**
+	 * Removes all of the pass tags from a message.
+	 * 
+	 * @param message the message with the pass tags.
+	 * @return the message without the pass tags.
+	 */
+	private String stripPasses(final String message) {
 		return message.substring(0, message.lastIndexOf("PP"));
 	}
 	
 	/**
-	 * Get the number of characters required to neutralize
-	 * @param dist
-	 * @param max
-	 * @return
+	 * Get the number of characters required to neutralize.
+	 * 
+	 * @param dist the distribution array.
+	 * @param max the maximum necessary for any one character.
+	 * @return the array of polarized characters.
 	 */
-	public int[] getFillerDistribution(final int[] dist, final int max) {
+	private int[] getFillerDistribution(final int[] dist, final int max) {
 		int[] filler = new int[dist.length];
 		for(int i = 0; i < dist.length; i++) {
 			if(dist[i] == -1) {
@@ -325,7 +517,14 @@ public class Cipher {
 		return filler;
 	}
 	
-	public int getRequiredFillerMax(final String message) {
+	/**
+	 * Get the maximum amount of neutralizing characters needed
+	 * for any one character.
+	 * 
+	 * @param message the message to encrypt.
+	 * @return the maximum polarized character.
+	 */
+	private int getRequiredFillerMax(final String message) {
 		int[][] distCombo = this.getCharacterDistribution(message);
 		int[] dist = distCombo[0];
 		int max = distCombo[1][0];
@@ -340,13 +539,14 @@ public class Cipher {
 	}
 	
 	/**
-	 * Apply the character neutralizer
-	 * @param message
-	 * @param filler
-	 * @param splice
-	 * @return
+	 * Apply the character neutralizer.
+	 * 
+	 * @param message the message to apply the filter to.
+	 * @param filler the filler value array.
+	 * @param splice the number to fill with.
+	 * @return the neutralized message.
 	 */
-	public String applyFiller(final String message, final int[] filler, final String splice) {
+	private String applyFiller(final String message, final int[] filler, final String splice) {
 		String output = message;
 		int[] rem = new int[filler.length];
 		int required = 0;
@@ -386,7 +586,13 @@ public class Cipher {
 		return output + this.createPasses(perPasses) + this.simpleReplace("Z" + this.convertNtoL(off), this.keys, this.values);
 	}
 	
-	public String createPasses(ArrayList<Integer> perPasses) {
+	/**
+	 * Create the passes tag.
+	 * 
+	 * @param perPasses the number of characters per pass.
+	 * @return the message with the pass tag.
+	 */
+	private String createPasses(ArrayList<Integer> perPasses) {
 		String pass = "PP";
 		for(int i = 0; i < perPasses.size(); i++) {
 			pass += this.convertNtoL(perPasses.get(i));
@@ -398,14 +604,15 @@ public class Cipher {
 	}
 	
 	/**
-	 * Remove all the filler.
+	 * Remove all the filler characters in a string,
+	 * negating the neutralizing agents.
 	 * 
-	 * @param message
-	 * @param required
-	 * @param offset
-	 * @return
+	 * @param message the message with filler.
+	 * @param required the number of neutralizing agents.
+	 * @param offset the offset used in distribution.
+	 * @return the cleared message.
 	 */
-	public String removeFiller(final String message, final int required, final int offset, final int[] passes) {
+	private String removeFiller(final String message, final int required, final int offset, final int[] passes) {
 		String output = message;
 		int index = 0;
 		int currentCycle = 0;
@@ -423,7 +630,13 @@ public class Cipher {
 		return output;
 	}
 	
-	public int getNonZeroIndex(int[] array) {
+	/**
+	 * Get the first nonzero index in an array.
+	 * 
+	 * @param array the array.
+	 * @return the first nonzero index.
+	 */
+	private int getNonZeroIndex(int[] array) {
 		for (int i = 0; i < array.length; i++) {
 			if(array[i] > 0) {
 				return i;
@@ -432,7 +645,13 @@ public class Cipher {
 		return -1;
 	}
 	
-	public int getLastNonZeroIndex(int[] array) {
+	/**
+	 * Get the last nonzero index in an array.
+	 * 
+	 * @param array the array.
+	 * @return the last nonzero index.
+	 */
+	private int getLastNonZeroIndex(int[] array) {
 		for (int i = array.length - 1; i >= 0; i--) {
 			if(array[i] > 0) {
 				return i;
@@ -441,15 +660,14 @@ public class Cipher {
 		return -1;
 	}
 	
-	
-	
 	/**
-	 * Encrypt
+	 * A single phase of the encryption. Separated from the public method
+	 * to allow for recursively encrypting over and over.
 	 * 
-	 * @param message
-	 * @return
+	 * @param message the original message.
+	 * @return the encrypted message.
 	 */
-	public String encrypt(final String message) {
+	private String encryptPhase(final String message) {
 		String input = message.toUpperCase();
 		String output = this.simpleReplace(input, this.keys, this.values);
 		System.out.println("\t > Finished applying simple replace [" + output + "]");
@@ -457,14 +675,25 @@ public class Cipher {
 		output = blurred;
 		return output;
 	}
-
+	
 	/**
-	 * Undo encrypt
+	 * Encrypt the message using the proprietary algorithm.
 	 * 
-	 * @param message
-	 * @return
+	 * @param message the original message.
+	 * @return the encrypted message.
 	 */
-	public String decrypt(final String message) {
+	public String encrypt(final String message) {
+		return this.encryptPhase(message);
+	}
+	
+	/**
+	 * A single phase of the decryption. Separated from the public method
+	 * to allow for recursively decrypting over and over.
+	 * 
+	 * @param message the encrypted message.
+	 * @return the original message.
+	 */
+	private String decryptPhase(final String message) {
 		String input = message.toUpperCase();
 		String output = this.simpleReplace(input, this.values, this.keys);
 		System.out.println("\t > Finished applying simple replace [" + output + "]");
@@ -473,6 +702,21 @@ public class Cipher {
 		return output;
 	}
 
+	/**
+	 * Undo the encryption using the proprietary algorithm.
+	 * 
+	 * @param message the encrypted message.
+	 * @return the original message.
+	 */
+	public String decrypt(final String message) {
+		return this.decryptPhase(message);
+	}
+
+	/**
+	 * The main function to let users encrypt and undo encrypt.
+	 * 
+	 * @param args unused
+	 */
 	public static void main(String[] args) {
 		Scanner scanner = new Scanner(System.in);
 		System.out.println("What is your password to encrypt?");
