@@ -1,6 +1,10 @@
 package mp7;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Scanner;
 
 public class Cipher {
@@ -27,7 +31,108 @@ public class Cipher {
 	 * @param password
 	 */
 	public String generateSequence(final String password) {
-		return "TODO";
+		MessageDigest messageDigest;
+		String sequence = "";
+		try {
+			messageDigest = MessageDigest.getInstance("SHA-256");
+			messageDigest.update(password.getBytes());
+			String preSequence = new String(byteArrayToHexString(messageDigest.digest()));
+			for(int i = 0; i < preSequence.length(); i++) {
+				sequence += (int) preSequence.charAt(i);
+			}
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		StringBuilder finalSequence = new StringBuilder();
+		int[] pieces2 = this.breakBySize(sequence, 2);
+		int[] pieces3 = this.breakBySize(sequence, 3);
+		int[] pieces4 = this.breakBySize(sequence, 4);
+		ArrayList<Integer> combined = this.combine(pieces2, this.breakDown(pieces3), this.breakDown(pieces4));
+		ArrayList<Integer> chopped = new ArrayList<Integer>(new LinkedHashSet<Integer>(combined));
+		ArrayList<Integer> seq26 = this.convertTo26(chopped);
+		for(int i = 0; i < seq26.size(); i++) {
+			if(seq26.get(i) < 10) {
+				finalSequence.append("0");
+			}
+			finalSequence.append(seq26.get(i));
+		}
+		return finalSequence.toString();
+	}
+	
+	public ArrayList<Integer> convertTo26(ArrayList<Integer> pieces) {
+		ArrayList<Integer> sorted = new ArrayList<Integer>();
+		for(int i = 0; i < pieces.size(); i++) {
+			sorted.add(pieces.get(i));
+		}
+		ArrayList<Integer> sorted26 = new ArrayList<Integer>();
+		for(int i = 0; i < sorted.size() && i < 27; i++) {
+			sorted26.add(sorted.get(i));
+		}
+		Collections.sort(sorted26);
+		ArrayList<Integer> p26 = new ArrayList<Integer>();
+		for(int j = 0; j < sorted26.size(); j++) {
+			for(int i = 0; i < pieces.size() && i < 27; i++) {
+				if(pieces.get(i) == sorted26.get(j)) {
+					p26.add(i);
+				}
+			}
+		}
+		return p26;
+	}
+	
+	public int[] breakBySize(String sequence, int size) {
+		ArrayList<Integer> pieces = new ArrayList<Integer>();
+		for (int i = 0; i < sequence.length() / size; i++) {
+			String sPiece = "";
+			for (int j = 0; j < size; j++) {
+				try {
+					sPiece += sequence.charAt(i * size + j);
+				} catch(Exception e) {
+					
+				}
+			}
+			try {
+				int piece = Integer.parseInt(sPiece);
+				pieces.add(piece);
+			} catch(Exception e) {
+				
+			}
+		}
+		int[] array = new int[pieces.size()];
+		for (int i = 0; i < array.length; i++) {
+			array[i] = pieces.get(i);
+		}
+		return array;
+	}
+	
+	public int[] breakDown(int[] original) {
+		int[] small = new int[original.length];
+		for (int i = 0; i < original.length; i++) {
+			int s = (original[i] / 7);
+			while(s > 99) {
+				s /= 7;
+			}
+			small[i] = s;
+		}
+		return small;
+	}
+	
+	public ArrayList<Integer> combine(int[] ... arrays) {
+		int size = 0;
+		for (int i = 0; i < arrays.length; i++) {
+			size += arrays[i].length;
+		}
+		int[] c = new int[size];
+		ArrayList<Integer> combined = new ArrayList<Integer>();
+		int index = 0;
+		for (int i = 0; i < arrays.length; i++) {
+			for (int j = 0; j < arrays[i].length; j++) {
+				c[index] = arrays[i][j];
+				index++;
+				combined.add(arrays[i][j]);
+			}
+		}
+		return combined;
 	}
 
 	/**
