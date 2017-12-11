@@ -1,28 +1,28 @@
 # PWD-Encryption
-MP7 - A unique password locked multi-layer encryption immune to character analysis
-==================== GOAL ====================
+MP7 - A unique password locked multi-layer encryption immune to character analysis<br />
+==================== GOAL ====================<br />
 The goal was to create an encryption which was unique to the password and thus could only be broken by someone who knew the password, rather than knew the encryption method.
 
-==================== TIME ====================
+==================== TIME ====================<br />
 Since every encrypted message can be different based on the message or the password, the brute force method of testing various inputs is nearly impossible since the attacker would have to not only test every possible message but also test every possible password. The number of possibilities that would have to be tested would scale at a rate of c27^(m+p) with m being the number of letters in the message and p being the number of letters in the password and c being the time it takes to encrypt one message. So with a ten letter password and assuming c = 1 second
-|______|_____|______________|
-|	 m	 |	p	 |	time		   	|
-|______|_____|______________|
-|  1	 |	10 |	5.6 * 10^15	|
-|	 2	 |	10 |	1.5 * 10^17	|
-|	 3	 |	10 |	4.1 * 10^18	|
-|	 4	 |	10 |	1.1 * 10^20	|
-|	 5	 |	10 |	3.0 * 10^21	|
-|	 6	 |	10 |	8.0 * 10^22	|
-|	 7	 |	10 |	2.2 * 10^24	|
-|	 8	 |	10 |	5.8 * 10^25	|
-|	 9 	 |	10 |	1.6 * 10^27	|
-|	 10	 |	10 |	4.2 * 10^28 | --> 100 billion * the age of the universe
-|______|_____|______________|
+|______|_____|______________|<br />
+|	 m	 |	p	 |	time		   	|<br />
+|______|_____|______________|<br />
+|  1	 |	10 |	5.6 * 10^15	|<br />
+|	 2	 |	10 |	1.5 * 10^17	|<br />
+|	 3	 |	10 |	4.1 * 10^18	|<br />
+|	 4	 |	10 |	1.1 * 10^20	|<br />
+|	 5	 |	10 |	3.0 * 10^21	|<br />
+|	 6	 |	10 |	8.0 * 10^22	|<br />
+|	 7	 |	10 |	2.2 * 10^24	|<br />
+|	 8	 |	10 |	5.8 * 10^25	|<br />
+|	 9 	 |	10 |	1.6 * 10^27	|<br />
+|	 10	 |	10 |	4.2 * 10^28 | --> 100 billion * the age of the universe<br />
+|______|_____|______________|<br />
+<br />
+and that is only with 10 characters for a password, let alone something like 20...<br />
 
-and that is only with 10 characters for a password, let alone something like 20...
-
-==================== METHOD ====================
+==================== METHOD ====================<br />
 Step 1:	Generate a sequence number that is unique to the password. ie: "password" --> 071724150123020426111409211200181310200603051625082219
 
 Step 2:	Generate key-value pairs using a proprietary algorithm which creates the connections based on the sequence number.
